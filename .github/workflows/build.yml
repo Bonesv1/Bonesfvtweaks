@@ -1,0 +1,23 @@
+name: Build Windows App
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Publish standalone Windows EXE
+        run: dotnet publish BonesTweaks.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
+      - name: Bundle downloadable app
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/BonesTweaks.exe,publish/Brand.png -DestinationPath BonesTweaks_Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BonesTweaks_Windows
+          path: BonesTweaks_Windows.zip
